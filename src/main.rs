@@ -28,7 +28,7 @@ struct Args {
     output: String,
 
     /// Filetype to download
-    #[arg(value_enum, short, long, default_value_t = FileType::Gif)]
+    #[arg(value_enum, short, long, default_value_t = FileType::Webp)]
     filetype: FileType,
 
     /// Open in webbrowser
