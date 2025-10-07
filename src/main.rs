@@ -1,6 +1,7 @@
 use clap::{Parser, ValueEnum};
 use futures_util::StreamExt;
 use serde_json::Value;
+use std::env;
 use std::fs::File;
 use std::io::prelude::*;
 
@@ -14,9 +15,9 @@ enum FileType {
 #[derive(Parser, Debug)]
 #[command(version, about, long_about = None)]
 struct Args {
-    /// API Key
+    /// API Key (can be set with GIPHY_API_KEY env var)
     #[arg(short, long)]
-    api_key: String,
+    api_key: Option<String>,
 
     /// Tag to search for
     #[arg(short, long, default_value_t = String::from("pain"))]
@@ -40,9 +41,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let args = Args::parse();
     let client = reqwest::Client::new();
 
+    let api_key = match env::var("GIPHY_API_KEY") {
+        Ok(key) => Some(key),
+        Err(_) => args.api_key,
+    }
+    .unwrap_or_else(|| {
+        println!("No API key provided");
+        std::process::exit(1);
+    });
+
     let url = format!(
         "https://api.giphy.com/v1/gifs/random?api_key={}&tag={}",
-        args.api_key, args.tag
+        api_key, args.tag
     );
 
     let extension = match args.filetype {
